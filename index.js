@@ -13,6 +13,8 @@ const fileUpload = require('express-fileupload');
 // Import routes
 const hospitalRoutes = require('./routes/hospital');
 const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/user');
+const userAuthRoutes = require('./routes/userAuth');
 // const hospitalSetupRoutes = require('./routes/hospitalSetup');
 
 // Import middleware
@@ -109,7 +111,9 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/admin', adminRoutes);
-// app.use('/api/hospital-setup', hospitalSetupRoutes);
+app.use('/api/users', userRoutes);          
+app.use('/api/users', userRoutes);          
+app.use('/api/auth', userAuthRoutes);  
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -135,8 +139,26 @@ app.use('*', (req, res) => {
       ],
       admin: [
         'POST /api/admin/login',
+        'POST /api/admin/logout',
         'GET /api/admin/profile',
-        'PUT /api/admin/profile'
+        'PUT /api/admin/profile',
+        'POST /api/admin/change-password',
+        'GET /api/admin/dashboard-stats'
+      ],
+      users: [
+        'GET /api/users',
+        'POST /api/users',
+        'PUT /api/users/:id',
+        'DELETE /api/users/:id',
+        'POST /api/users/:id/reset-password',
+        'GET /api/users/stats'
+      ],
+      auth: [
+        'POST /api/auth/login',
+        'POST /api/auth/logout',
+        'GET /api/auth/me',
+        'PUT /api/auth/profile',
+        'POST /api/auth/change-password'
       ],
       hospitalSetup: [
         'GET /api/hospital-setup/status',
@@ -215,8 +237,11 @@ const startServer = async () => {
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
       console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
-      console.log(`📧 Email service: ${process.env.SMTP_HOST}`);
+      console.log(`📧 Email service: ${process.env.SMTP_USER}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔐 Admin login: http://localhost:${PORT}/api/admin/login`);
+      console.log(`👥 User login: http://localhost:${PORT}/api/auth/login`);
+      console.log(`👤 User management: http://localhost:${PORT}/api/users`);
     });
 
     // Handle server errors

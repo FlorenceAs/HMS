@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true
+    lowercase: true,
+    index: true // Add index for better performance
   },
   password: {
     type: String,
@@ -27,20 +28,28 @@ const userSchema = new mongoose.Schema({
   hospitalId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Hospital',
-    required: true
+    required: true,
+    index: true // Add index for better performance
   },
   role: {
     type: String,
     enum: ['admin', 'doctor', 'nurse', 'receptionist', 'lab_technician', 'pharmacist', 'accountant'],
-    required: true
+    required: true,
+    index: true // Add index for filtering
   },
-  employeeId: String,
+  employeeId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    index: true
+  },
   department: String,
   specialization: String, // For doctors
   phone: String,
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true // Add index for filtering
   },
   permissions: [{
     module: String, // e.g., 'patients', 'appointments', 'billing'
@@ -50,10 +59,12 @@ const userSchema = new mongoose.Schema({
   profilePicture: String,
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'Admin' // Should reference Admin, not User
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Hash password before saving
@@ -72,5 +83,8 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`;
 });
+
+// Ensure employeeId is unique per hospital
+userSchema.index({ hospitalId: 1, employeeId: 1 }, { unique: true });
 
 module.exports = mongoose.model('User', userSchema);
